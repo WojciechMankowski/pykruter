@@ -1,27 +1,14 @@
-<!DOCTYPE>
-<html>
-<head>
-</head>
-
-<body>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <h1 style="text-align:center">{{question}}</h1>
-    <br>
-    <br>
+{% extends 'base.html' %}
+{% block content %}
+ <h1 style="text-align:center">{{question}}</h1>
     <h1 style="text-align:center;display:none"></h1>
-    <br>
-    <br>
-
     <div style="text-align:center">
         <button onclick="window.location.href='/'">Następne pytanie</button>
     <div>
-    
-    <script>
-      function showDiv() {
+    <div id="answer" style="display:none;"> {{answer}} </div>
+        <button id="butt_answer" name="answer" onclick="showDiv()"> Show answer </button>
+        <script>
+            function showDiv() {
         if (document.getElementById('answer').style.display!='block') {
           document.getElementById('answer').style.display = "block";
           document.getElementById('butt_answer').innerText = "Schowaj";
@@ -30,9 +17,5 @@
           document.getElementById('butt_answer').innerText = "Pokaż";
         }
       }
-    </script>
-
-    <div id="answer" style="display:none;"> {{answer}} </div>
-    <button id="butt_answer" name="answer" onclick="showDiv()"> Show answer </button>
-    
-</html>
+        </script>
+{% endblock %}
