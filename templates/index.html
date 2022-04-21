@@ -1,21 +1,30 @@
 {% extends 'base.html' %}
 {% block content %}
- <h1 style="text-align:center">{{question}}</h1>
-    <h1 style="text-align:center;display:none"></h1>
-    <div style="text-align:center">
-        <button onclick="window.location.href='/'">Następne pytanie</button>
-    <div>
-    <div id="answer" style="display:none;"> {{answer}} </div>
-        <button id="butt_answer" name="answer" onclick="showDiv()"> Show answer </button>
-        <script>
-            function showDiv() {
-        if (document.getElementById('answer').style.display!='block') {
-          document.getElementById('answer').style.display = "block";
-          document.getElementById('butt_answer').innerText = "Schowaj";
-        } else {
-          document.getElementById('answer').style.display = "none";
-          document.getElementById('butt_answer').innerText = "Pokaż";
-        }
+<h1 style="text-align:center">{{question}}</h1>
+<h1 style="text-align:center;display:none"></h1>
+<div style="text-align:center">
+  <button onclick="window.location.href='/'">Następne pytanie</button>
+  <button id="butt_answer" name="answer" onclick="showDiv()"> Pokaż odpowiedź</button>
+  <div id="answer" style="display:none;"> {{answer}}
+
+    <form method="post">
+      <input type="submit" value="Znam odpowiedź">
+    </form>
+  </div>
+
+  <script>
+    const showDiv = () => {
+      if (document.getElementById('answer').style.display != 'block') {
+        document.getElementById('answer').style.display = "block";
+        document.getElementById('butt_answer').innerText = "Schowaj";
+      } else {
+        document.getElementById('answer').style.display = "none";
+        document.getElementById('butt_answer').innerText = "Pokaż odpowiedź";
       }
-        </script>
-{% endblock %}
+    }
+
+
+
+  </script>
+
+  {% endblock %}

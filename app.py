@@ -1,25 +1,62 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, flash, url_for, redirect
 import random
 from sqlalchemy.orm import sessionmaker
-from DowlaondData import dowlaondData
+from DowlaondData import createlistQustion
 from UserForm import UserRegister, UserLogin
 from UserModel import User, engine
+from flask_login import (
+    LoginManager,
+    login_user,
+    login_required,
+    logout_user,
+    current_user,
+)
+from flask_bootstrap import Bootstrap
+from Translation import translation
+from usunprefiks import usunprefiks
 
-app=Flask(__name__, static_folder="static")
-app.config['SECRET_KEY'] = 'Tajny klucz'
+app = Flask(__name__, static_folder="static")
+app.config["SECRET_KEY"] = "Tajny klucz"
 
-@app.route('/')
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+Bootstrap(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    return session.query(User).filter_by(id=int(user_id)).one()
+
+
+data = createlistQustion()
+
+
+
+@login_required
+@app.route("/", methods=["GET", "POST"])
 def index():
-    # Dane
-    data = dowlaondData()
-    # Losowanie pytania
     i = random.choice(data)
-    question = i.getQuestion()
-    answer = i.getAnswer()
-
+    question = "Wylosuj jeszcze raz"
+    answer = "Wylosuj jeszcze raz"
+    if i.getQuestion() != None and i.getAnswer() != None:
+        question = usunprefiks(translation(i.getQuestion()))
+        answer = usunprefiks(translation(i.getAnswer()))
+    if request.method == "POST":
+        current_user.setnumber_of_points(50)
+        Session = sessionmaker(bind=engine)
+        session = Session()
+        session.query(User).filter_by(user_name=current_user.getName()).update(
+            {"number_of_points": current_user.getnumber_of_points()}
+        )
+        session.commit()
+        session.close()
     return render_template("index.html", question=question, answer=answer)
 
-@app.route('/registration', methods=['GET', 'POST'])
+
+@app.route("/registration", methods=["GET", "POST"])
 def registration():
     form = UserRegister()
     if request.method == "POST" and form.validate():
@@ -42,20 +79,33 @@ def registration():
         session.close()
     return render_template("register.html", form=form)
 
-@app.route("/login", methods=['GET', 'POST'])
+
+@app.route("/login", methods=["GET", "POST"])
 def login():
     form = UserLogin()
     Session = sessionmaker(bind=engine)
     session = Session()
     if request.method == "POST" and form.validate():
         user = session.query(User).filter_by(user_name=request.form["name_user"]).one()
-        if user.getPassword() == request.form['password']:
+        if user.getPassword() == request.form["password"]:
+            login_user(user)
+            flash("Logged in successfully.")
             inf = "Zostałeść zalogowany"
             return render_template("login.html", form=form, inf=inf)
         else:
             inf = "Podałeść błędne dane"
             return render_template("login.html", form=form, inf=inf)
-        return render_template("login.html", form=form, inf=inf)
     return render_template("login.html", form=form)
-if __name__=="__main__":
+
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash("You Have Been Logged Out!  Thanks For Stopping By...")
+    return redirect(url_for("login"))
+
+
+if __name__ == "__main__":
     app.run()
+# set FLASK_ENV=development
