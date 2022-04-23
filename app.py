@@ -35,17 +35,26 @@ data = createlistQustion()
 
 
 
-@login_required
+
 @app.route("/", methods=["GET", "POST"])
+@login_required
 def index():
     i = random.choice(data)
+    print(current_user)
     question = "Wylosuj jeszcze raz"
     answer = "Wylosuj jeszcze raz"
+    liczba_pkt = 0
     if i.getQuestion() != None and i.getAnswer() != None:
         question = usunprefiks(translation(i.getQuestion()))
         answer = usunprefiks(translation(i.getAnswer()))
+        if len(answer) <= 125:
+            liczba_pkt = 25
+        elif len(answer) >= 126 and len(answer) <= 229:
+            liczba_pkt = 50
+        else:
+            liczba_pkt = 75
     if request.method == "POST":
-        current_user.setnumber_of_points(50)
+        current_user.setnumber_of_points(liczba_pkt)
         Session = sessionmaker(bind=engine)
         session = Session()
         session.query(User).filter_by(user_name=current_user.getName()).update(
@@ -89,11 +98,11 @@ def login():
         user = session.query(User).filter_by(user_name=request.form["name_user"]).one()
         if user.getPassword() == request.form["password"]:
             login_user(user)
-            flash("Logged in successfully.")
-            inf = "Zostałeść zalogowany"
-            return render_template("login.html", form=form, inf=inf)
+            flash("Zostałeść zalogowany", "succes")
+            return redirect('/')
         else:
             inf = "Podałeść błędne dane"
+            flash(inf, "error")
             return render_template("login.html", form=form, inf=inf)
     return render_template("login.html", form=form)
 
@@ -102,7 +111,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash("You Have Been Logged Out!  Thanks For Stopping By...")
+    flash("Zostałeś wylogowany! Dzięki, że wpadłeś...", "Succes")
     return redirect(url_for("login"))
 
 
